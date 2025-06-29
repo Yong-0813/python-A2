@@ -9,5 +9,5 @@ class Ticket:
         self.ic_number = ic_number
         self.status = status
 
-    def to_line(self):
+    def __str__(self):
         return f"{self.ticket_id},{self.booking_id},{self.event_id},{self.ticket_type},{self.buyer_name},{self.ic_number},{self.status}\n"

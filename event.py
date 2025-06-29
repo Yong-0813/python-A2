@@ -13,8 +13,9 @@ class Event:
             "quota": int(quota)
         }
 
-    def display_ticket_types(self, remaining):
-        print(f"Ticket Types for {self.name} ({self.event_id}):")
-        for ttype, info in self.ticket_types.items():
-            left = remaining.get(ttype, info['quota'])
-            print(f"- {ttype} - RM{info['price']} (Remaining: {left})")
+    def __str__(self):
+        lines = []
+        for ticket_type, info in self.ticket_types.items():
+            line = f"{self.event_id},{self.name},{self.date},{self.venue},{ticket_type},{info['price']},{info['quota']}"
+            lines.append(line)
+        return "\n".join(lines)
