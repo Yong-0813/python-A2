@@ -35,31 +35,38 @@ def eventOptionMenu():
 
 
 def addEvent():
+    duplicate_id = []
+    print("\n=== Ongoing Event ===")
+    with open(events_filename, "r") as events_info:
+        for info in events_info:
+            if info.strip():
+                info_parts = info.strip().split(",")
+                event_id = info_parts[0]
+                
+                found = False
+                for dup_event_id in duplicate_id:
+                    if dup_event_id == event_id:
+                        found = True
+                        break
+
+                if not found:
+                    name = info_parts[1]
+                    date = info_parts[2]
+                    venue = info_parts[3]
+                    print(f"{event_id} - {name} | {date} | {venue}")
+                    duplicate_id.append(event_id)
+
     print("\n=== Add New Event ===")
     
-    exist_id = []
-    with open(events_filename, "r") as info:
-        for line in info:
-            if line.strip():
-                event_id = line.strip().split(",")[0]
-                exist_id.append(event_id)
-
-    while True:
-        event_id = input("\nEnter Event ID (e.g. E001): ").strip()
-        if event_id in exist_id:
-            print("This Event ID already exists! Please enter a another unique Event ID.")
-        else:
-            break
-
     event_name = input("Please Enter Event Name: ").strip()
-    event_date = input("Please Enter Event Date (YYYY-mm-dd): ").strip()
+    event_date = input("Please Enter Event Date (yyyyMMdd): ").strip()
     event_venue = input("Please Enter Event Venue: ").strip()
 
-    event_info = Event(event_id, event_name, event_date, event_venue)
+    event_info = Event(event_name, event_date, event_venue)
 
     while True:
         ticket_type = input("\nPlease Enter Ticket Type (VIP, Student): ").strip()
-        price = input("Please Enter Ticket Price (10.00): ").strip()
+        price = input("Please Enter Ticket Price (RM): ").strip()
         quota = input("Please Enter Ticket Quota: ").strip()
 
         event_info.add_ticket_type(ticket_type, price, quota)
@@ -71,9 +78,9 @@ def addEvent():
     with open(events_filename, "a") as addInfo:
         addInfo.write(str(event_info) + "\n")
 
-    print("\n" + "=" * 30)
-    print(f"{event_info.name} added successfully!")
-    print("=" * 30)
+    print("\n" + "=" * 50)
+    print(f"Event [{event_info.event_id}] - {event_info.name} added successfully!")
+    print("=" * 50)
 
 
 def bookTicket():
@@ -96,7 +103,7 @@ def bookTicket():
                     name = info_parts[1]
                     date = info_parts[2]
                     venue = info_parts[3]
-                    print(f"{event_id} - {name} | {date} | {venue}\n")
+                    print(f"Event ID: [ {event_id} ]\nEvent Title: {name}\nDate: {date}\nVenue: {venue}\n")
                     duplicate_id.append(event_id)
 
     while True:
