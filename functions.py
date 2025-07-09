@@ -1,6 +1,7 @@
 # functions.py
 import os
 import random
+from datetime import datetime
 from event import Event
 from bill import Bill
 import ticket
@@ -59,19 +60,42 @@ def addEvent():
     print("\n=== Add New Event ===")
     
     event_name = input("Please Enter Event Name: ").strip()
-    event_date = input("Please Enter Event Date (yyyyMMdd): ").strip()
+    if check_cancel(event_name):
+        return
+    while True:
+        event_date = input("Please Enter Event Date (yyyyMMdd): ").strip()
+        if check_cancel(event_date):
+            return
+        if not is_valid_date(event_date):
+            print("Invalid date! Please enter a valid date in YYYYMMDD format.")
+            continue
+        break
     event_venue = input("Please Enter Event Venue: ").strip()
+    if check_cancel(event_venue):
+        return
 
     event_info = Event(event_name, event_date, event_venue)
-
+    added_types = []
     while True:
         ticket_type = input("\nPlease Enter Ticket Type (VIP, Student): ").strip()
+        if check_cancel(ticket_type):
+            return
+        if ticket_type.lower() in (t.lower() for t in added_types):
+            print("This ticket type has already been added. Please enter a different type.")
+            continue
         price = input("Please Enter Ticket Price (RM): ").strip()
+        if check_cancel(price):
+            return
         quota = input("Please Enter Ticket Quota: ").strip()
+        if check_cancel(quota):
+            return
 
         event_info.add_ticket_type(ticket_type, price, quota)
-
+        added_types.append(ticket_type)
+        
         addMore = input("Add another ticket type? (y/n): ").strip().lower()
+        if check_cancel(addMore):
+            return
         if addMore != 'y':
             break
 
@@ -84,7 +108,7 @@ def addEvent():
 
 
 def bookTicket():
-    print("\n=== Book Ticket ===")
+    print(f"\n{'='*10} Book Ticket {'='*10}")
     duplicate_id = []
 
     with open(events_filename, "r") as events_info:
@@ -103,11 +127,14 @@ def bookTicket():
                     name = info_parts[1]
                     date = info_parts[2]
                     venue = info_parts[3]
-                    print(f"Event ID: [ {event_id} ]\nEvent Title: {name}\nDate: {date}\nVenue: {venue}\n")
+                    print(f"\n{'Event ID':<12}: [ {event_id} ]\n{'Event Title':<12}: {name}\n{'Date':<12}: {date}\n{'Venue':<12}: {venue}\n")
+                    print("-"*33)
                     duplicate_id.append(event_id)
 
     while True:
-        selectID = input("Please Enter Event ID: ").strip()
+        selectID = input("Please Enter Event ID: ").strip().upper()
+        if check_cancel(selectID):
+            return
         found = False
         for dup_event_id in duplicate_id:
             if selectID == dup_event_id:
@@ -131,11 +158,12 @@ def bookTicket():
                     price = float(info_parts[5])
                     quota = int(info_parts[6])
                     tickets[ticket_type] = {"price": price, "quota": quota}
-                    print(f"- {ticket_type}: RM{price:.2f} (Remaining: {quota})")
+                    print(f"{ticket_type.upper():<8}: RM{price:.2f} (Remaining: {quota})")
 
     while True:
         selectType = input("\nPlease Enter Ticket Type: ").strip()
-        
+        if check_cancel(selectType):
+            return
         matched_type = None
         for type in tickets:
             if selectType.lower() == type.lower():
@@ -147,7 +175,8 @@ def bookTicket():
             continue
 
         ticketQuantity = input("How Many Tickets Needed: ").strip()
-
+        if check_cancel(ticketQuantity):
+            return
         if not ticketQuantity.isdigit():
             print("Please enter a valid number.")
             continue
@@ -158,7 +187,7 @@ def bookTicket():
             continue
 
         if ticketQuantity > tickets[matched_type]["quota"]:
-            print(f"Sorry, only {tickets[matched_type]['quota']} tickets available for {matched_type}.")
+            print(f"Sorry, only {tickets[matched_type]['quota']} tickets available for {matched_type.upper()}.")
             continue
 
         tickets[matched_type]["quota"] -= ticketQuantity
@@ -174,15 +203,14 @@ def bookTicket():
                     info = ",".join(info_part)
                 lines.append(info)
 
-    with open(events_filename, "w") as updateQuota:
-        for info in lines:
-            updateQuota.write(info + "\n")
-
 
     print("\n=== Customer Details ===")
     buyer_name = input("Please Enter Customer Name: ")
+    if check_cancel(buyer_name):
+        return
     ic_passport = input("Please Enter IC/Passport No: ")
-
+    if check_cancel(ic_passport):
+        return
     last_booking_id = 0
     with open(bookings_filename, "r") as booking_info:
         for info in booking_info:
@@ -235,6 +263,11 @@ def bookTicket():
 
     bill_info.print_invoice(buyer_name, ic_passport, event_name, event_date, event_venue, tickets[matched_type]["price"], ticketQuantity, new_ticket_id , selectType) 
 
+    #update quota in event.txt
+    with open(events_filename, "w") as updateQuota:
+        for info in lines:
+            updateQuota.write(info.strip() + "\n")
+
     # Save to bookings.txt
     with open(bookings_filename, "a") as booking_file:
         booking_file.write(f"{new_booking_id},{buyer_name},{ic_passport},{selectID},{event_name},{matched_type},{ticketQuantity},{bill_info.booking_date},{bill_info.total_charge():.2f}\n")
@@ -282,7 +315,9 @@ def checkInTicket():
 
 def showRecords():
     print("\n=== Booking Summary ===\n")
-    print("{:<12} {:<20} {:<20} {:<20} {:<10} {:<10} {:<18}".format("Book ID","Buyer Name","IC/Passport", "Event Name", "Type", "Quantity", "Total Price (RM)"))
+    print(f"{'-'*145}")
+    print("{:<12} {:<30} {:<20} {:<30} {:<10} {:<10} {:<18}".format("Book ID","Buyer Name","IC/Passport", "Event Name", "Type", "Quantity", "Total Price (RM)"))
+    print(f"{'-'*145}")
     with open(bookings_filename, "r") as bookings_info:
         for info in bookings_info:
             if info.strip():
@@ -299,4 +334,20 @@ def showRecords():
                 quantity = info_parts[6]
                 total_charge = info_parts[8]
 
-                print("{:<12} {:<20} {:<20} {:<20} {:<10} {:<10} {:<18}".format(booking_id, buyer_name,ic_passport, event_name, ticket_type, quantity, total_charge))
+                print("{:<12} {:<30} {:<20} {:<30} {:<10} {:<10} {:<18}".format(booking_id, buyer_name,ic_passport, event_name, ticket_type.upper(), quantity, total_charge))
+
+def check_cancel(input_str):
+    if input_str.strip().lower() in ["cancel"]:
+        print("\nAction cancelled. Returning to main menu...\n")
+        return True
+    return False
+
+def is_valid_date(date_str):
+    if len(date_str) != 8 or not date_str.isdigit():
+        return False
+    try:
+        datetime.strptime(date_str, "%Y%m%d")
+        return True
+    except ValueError:
+        return False
+
