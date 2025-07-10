@@ -5,10 +5,13 @@ from datetime import datetime
 from event import Event
 from bill import Bill
 import ticket
+
+# variable for each file
 events_filename = "events.txt"
 bookings_filename = "bookings.txt"
 tickets_filename = "tickets.txt"
 
+# ********************** Main Menu **********************
 def functionMenu():
     return {
         "1": "Add New Event",
@@ -19,6 +22,7 @@ def functionMenu():
     }
 
 
+# not found
 def eventOptionMenu():
     event_dict = {}
 
@@ -34,82 +38,93 @@ def eventOptionMenu():
                     event_dict[event_id] = event_name
     return event_dict
 
-
+# ********************** Add Event Function **********************
 def addEvent():
-    duplicate_id = []
+    duplicate_id = [] #used to store shown event list
     print("\n=== Ongoing Event ===")
+    # Display ongoing event
     with open(events_filename, "r") as events_info:
         for info in events_info:
             if info.strip():
                 info_parts = info.strip().split(",")
                 event_id = info_parts[0]
                 
+                # a loop to check whether an event had already displayed, to prevent duplicate event display
                 found = False
                 for dup_event_id in duplicate_id:
                     if dup_event_id == event_id:
                         found = True
                         break
-
                 if not found:
                     name = info_parts[1]
                     date = info_parts[2]
                     venue = info_parts[3]
                     print(f"{event_id} - {name} | {date} | {venue}")
-                    duplicate_id.append(event_id)
+                    duplicate_id.append(event_id) # append shown event_id to duplicate_id list
 
     print("\n=== Add New Event ===")
     
-    event_name = input("Please Enter Event Name: ").strip()
+    event_name = input("Please Enter Event Name: ").strip() # Event Title
     if check_cancel(event_name):
         return
+    
     while True:
-        event_date = input("Please Enter Event Date (yyyyMMdd): ").strip()
+        event_date = input("Please Enter Event Date (yyyyMMdd): ").strip() # Event Date
+        # check validity of date input
         if check_cancel(event_date):
             return
         if not is_valid_date(event_date):
             print("Invalid date! Please enter a valid date in YYYYMMDD format.")
             continue
         break
-    event_venue = input("Please Enter Event Venue: ").strip()
+
+    event_venue = input("Please Enter Event Venue: ").strip() # Event Venue
     if check_cancel(event_venue):
         return
 
     event_info = Event(event_name, event_date, event_venue)
+
+    # a list to store added ticket types
     added_types = []
     while True:
-        ticket_type = input("\nPlease Enter Ticket Type (VIP, Student): ").strip()
+        ticket_type = input("\nPlease Enter Ticket Type (VIP, Student): ").strip() # Ticket Type
         if check_cancel(ticket_type):
             return
+        # to check duplicate input for ticket types
         if ticket_type.lower() in (t.lower() for t in added_types):
             print("This ticket type has already been added. Please enter a different type.")
             continue
-        price = input("Please Enter Ticket Price (RM): ").strip()
+
+        price = input("Please Enter Ticket Price (RM): ").strip() # Ticket Price
         if check_cancel(price):
             return
-        quota = input("Please Enter Ticket Quota: ").strip()
+        quota = input("Please Enter Ticket Quota: ").strip() # Ticket Quota
         if check_cancel(quota):
             return
 
         event_info.add_ticket_type(ticket_type, price, quota)
-        added_types.append(ticket_type)
-        
+        added_types.append(ticket_type) # append added ticket type into added_type list
+
+        # add another ticket type
         addMore = input("Add another ticket type? (y/n): ").strip().lower()
         if check_cancel(addMore):
             return
         if addMore != 'y':
             break
-
+    
+    # write event info into events.txt
     with open(events_filename, "a") as addInfo:
         addInfo.write(str(event_info) + "\n")
 
+    # display successful message
     print("\n" + "=" * 50)
     print(f"Event [{event_info.event_id}] - {event_info.name} added successfully!")
     print("=" * 50)
 
-
+# ********************** Book Ticket Function **********************
 def bookTicket():
     print(f"\n{'='*10} Book Ticket {'='*10}")
-    duplicate_id = []
+    duplicate_id = [] #used to store shown event list
 
     with open(events_filename, "r") as events_info:
         for info in events_info:
@@ -117,6 +132,7 @@ def bookTicket():
                 info_parts = info.strip().split(",")
                 event_id = info_parts[0]
                 
+                # a loop to check whether an event had already displayed, to prevent duplicate event display
                 found = False
                 for dup_event_id in duplicate_id:
                     if dup_event_id == event_id:
@@ -129,12 +145,13 @@ def bookTicket():
                     venue = info_parts[3]
                     print(f"\n{'Event ID':<12}: [ {event_id} ]\n{'Event Title':<12}: {name}\n{'Date':<12}: {date}\n{'Venue':<12}: {venue}\n")
                     print("-"*33)
-                    duplicate_id.append(event_id)
+                    duplicate_id.append(event_id) # append shown event_id to duplicate_id list
 
     while True:
-        selectID = input("Please Enter Event ID: ").strip().upper()
+        selectID = input("Please Enter Event ID: ").strip().upper() # Event ID input
         if check_cancel(selectID):
             return
+        # Use duplicate_id list to find valid event id
         found = False
         for dup_event_id in duplicate_id:
             if selectID == dup_event_id:
@@ -149,6 +166,7 @@ def bookTicket():
     print("=" * 30 + "\n")
     tickets = {}
 
+    # Display available ticket
     with open(events_filename, "r") as ticket_info:
         for info in ticket_info:
             if info.strip():
@@ -159,9 +177,9 @@ def bookTicket():
                     quota = int(info_parts[6])
                     tickets[ticket_type] = {"price": price, "quota": quota}
                     print(f"{ticket_type.upper():<8}: RM{price:.2f} (Remaining: {quota})")
-
+    # Check availability of ticket type
     while True:
-        selectType = input("\nPlease Enter Ticket Type: ").strip()
+        selectType = input("\nPlease Enter Ticket Type: ").strip() # Ticket Type input
         if check_cancel(selectType):
             return
         matched_type = None
@@ -174,18 +192,19 @@ def bookTicket():
             print("Invalid Ticket Type! Please Enter Again!")
             continue
 
-        ticketQuantity = input("How Many Tickets Needed: ").strip()
+        ticketQuantity = input("How Many Tickets Needed: ").strip() # Ticket Quantity input
         if check_cancel(ticketQuantity):
             return
+        # validate input
         if not ticketQuantity.isdigit():
             print("Please enter a valid number.")
             continue
-
         ticketQuantity = int(ticketQuantity)
         if ticketQuantity <= 0:
             print("Quantity must be at least 1.")
             continue
 
+        # check enter quantity and available ticket
         if ticketQuantity > tickets[matched_type]["quota"]:
             print(f"Sorry, only {tickets[matched_type]['quota']} tickets available for {matched_type.upper()}.")
             continue
@@ -203,14 +222,15 @@ def bookTicket():
                     info = ",".join(info_part)
                 lines.append(info)
 
-
+    # Customer Details
     print("\n=== Customer Details ===")
-    buyer_name = input("Please Enter Customer Name: ")
+    buyer_name = input("Please Enter Customer Name: ") # Customer Name input
     if check_cancel(buyer_name):
         return
-    ic_passport = input("Please Enter IC/Passport No: ")
+    ic_passport = input("Please Enter IC/Passport No: ") # Customer IC/Passport No input
     if check_cancel(ic_passport):
         return
+    # Check latest Booking Id to prevent duplicate
     last_booking_id = 0
     with open(bookings_filename, "r") as booking_info:
         for info in booking_info:
@@ -220,9 +240,10 @@ def bookTicket():
                     num = int(booking_id[1:])
                     if num > last_booking_id:
                         last_booking_id = num
+    # assign new booking id
+    new_booking_id = "B" + str(last_booking_id + 1).zfill(4) # Booking ID generate
 
-    new_booking_id = "B" + str(last_booking_id + 1).zfill(4)
-
+    # list to store existing ticket ID to pevent duplicate
     existing_ticketID = []
     with open(tickets_filename, "r") as ticket_info:
         for info in ticket_info:
@@ -234,9 +255,10 @@ def bookTicket():
 
     for _ in range(ticketQuantity):
         while True:
-            random_digits = str(random.randint(100000, 999999))
-            check_ticket_id = f"{selectID}-{random_digits}"
+            random_digits = str(random.randint(100000, 999999)) # generate random digits for ticket id
+            check_ticket_id = f"{selectID}-{random_digits}" # generate Ticket ID
             exists = False
+            # check duplicate
             for ticketID in existing_ticketID:
                 if check_ticket_id == ticketID or check_ticket_id in new_ticket_id:
                     exists = True
@@ -244,7 +266,8 @@ def bookTicket():
             if not exists:
                 new_ticket_id.append(check_ticket_id)
                 break
-
+    
+    # Pass input to Bill to generate bill
     bill_info = Bill(new_booking_id)
     bill_info.subtotal = tickets[matched_type]["price"] * ticketQuantity
     for ticket_id in new_ticket_id:
@@ -260,10 +283,12 @@ def bookTicket():
                     event_date = info_parts[2]
                     event_venue = info_parts[3]
                     break
-
+    
+    # Print bill
     bill_info.print_invoice(buyer_name, ic_passport, event_name, event_date, event_venue, tickets[matched_type]["price"], ticketQuantity, new_ticket_id , selectType) 
 
-    #update quota in event.txt
+    # Update file
+    # update quota in event.txt
     with open(events_filename, "w") as updateQuota:
         for info in lines:
             updateQuota.write(info.strip() + "\n")
@@ -277,24 +302,26 @@ def bookTicket():
         for ticket_id in new_ticket_id: 
             ticket_file.write(f"{ticket_id},{new_booking_id},{selectID},{matched_type},{buyer_name},{ic_passport},{"Active"}\n")
 
-
+# ********************** Check In Ticket Function **********************
 def checkInTicket():
     print("\n=== Ticket Check-In ===")
     while True:
-        ticket_id_input = input("\nPlease Enter Ticket ID: ").strip()
+        ticket_id_input = input("\nPlease Enter Ticket ID: ").strip() # Ticket ID input
 
         found = False
-        updated_lines = []
+        updated_lines = [] # store checked in ticket info
 
+        # retrive ticket info
         with open(tickets_filename, "r") as ticket_info:
             for info in ticket_info:
                 if info.strip():
                     info_parts = info.strip().split(",")
                     ticket_id = info_parts[0]
                     status = info_parts[-1] if len(info_parts) >= 5 else "Active"
-
+                    
                     if ticket_id == ticket_id_input:
                         found = True
+                        # Check ticket status
                         if status.lower() == "checked-in":
                             print("Ticket already checked in.")
                         else:
@@ -307,12 +334,13 @@ def checkInTicket():
             print("Ticket ID not found.")
 
         else:
+            # update ticket status
             with open(tickets_filename, "w") as file:
                 for line in updated_lines:
                     file.write(line + "\n")
             break
 
-
+# ********************** Show Records **********************
 def showRecords():
     print("\n=== Booking Summary ===\n")
     print(f"{'-'*145}")
@@ -322,6 +350,7 @@ def showRecords():
         for info in bookings_info:
             if info.strip():
                 info_parts = info.strip().split(",")
+                # to check any corrupted line
                 if len(info_parts) < 9:
                     print("Error: Lose infomation of booking record!\n")
                     continue
@@ -336,12 +365,14 @@ def showRecords():
 
                 print("{:<12} {:<30} {:<20} {:<30} {:<10} {:<10} {:<18}".format(booking_id, buyer_name,ic_passport, event_name, ticket_type.upper(), quantity, total_charge))
 
+# cancel option for user to denied current session and back to menu
 def check_cancel(input_str):
     if input_str.strip().lower() in ["cancel"]:
         print("\nAction cancelled. Returning to main menu...\n")
         return True
     return False
 
+# check validity of date
 def is_valid_date(date_str):
     if len(date_str) != 8 or not date_str.isdigit():
         return False

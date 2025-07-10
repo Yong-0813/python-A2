@@ -1,4 +1,5 @@
 # ticket.py
+# Ticket Info
 class Ticket:
     def __init__(self, ticket_id, booking_id, event_id, ticket_type, buyer_name, ic_number, status='Active'):
         self.ticket_id = ticket_id

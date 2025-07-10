@@ -1,4 +1,5 @@
 # event.py
+# Event Info
 class Event:
 
     _event_counter = 1 
@@ -10,11 +11,13 @@ class Event:
         lines = file.readlines()
         file.close()
         
+        # Auto generate and increment for Event ID
+        # variable to store latest Event ID
         max_id = 0
         for line in lines:
             parts = line.strip().split(",")
             if parts and parts[0].startswith("E"):
-                id_num = int(parts[0][1:])  # assumes valid format like E001
+                id_num = int(parts[0][1:])  
                 if id_num > max_id:
                     max_id = id_num
         cls._event_counter = max_id + 1
@@ -23,7 +26,7 @@ class Event:
 
         if Event._event_counter == 1:
             Event._initialize_counter_from_file()
-            
+
         self.event_id = f"E{Event._event_counter:03d}"
         Event._event_counter += 1
         self.name = name

@@ -1,4 +1,4 @@
-E001,Education Fair,2025-07-31,Lecture Hall 3,vip,20.0,50
+E001,Education Fair,2025-07-31,Lecture Hall 3,vip,20.0,48
 E001,Education Fair,2025-07-31,Lecture Hall 3,student,20.0,100
 E002,Summer Food Fair,2025-08-01,Parking Lot,vip,20.0,20
 E002,Summer Food Fair,2025-08-01,Parking Lot,student,5.0,95

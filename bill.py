@@ -1,6 +1,7 @@
 # bill.py
 import datetime
 
+
 class Bill:
     def __init__(self, booking_id):
         self.booking_id = booking_id
@@ -8,20 +9,23 @@ class Bill:
         self.subtotal = 0
         self.ticket_info = []
 
+    # retrived purchased ticket's ID
     def add_ticket(self, ticket):
         self.ticket_info.append(ticket)
 
+    # Calculate Charges
     def calculate_charges(self):
         return {
             "sst": self.subtotal * 0.06,
             "processing": self.subtotal * 0.02,
             "admin": 5.0
         }
-
+    # Total Charges
     def total_charge(self):
         charges = self.calculate_charges()
         return self.subtotal + charges['sst'] + charges['processing'] + charges['admin']
-
+    
+    # Bill Generate
     def print_invoice(self, buyer_name, ic_passport, event_name, event_date, event_venue, price, quantity, ticket_id, ticket_type):
         charges = self.calculate_charges()
         print("\n" + "=" * 52)

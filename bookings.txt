@@ -1,1 +1,1 @@
-B0001,Jackie Chan,020330142232,E002,Summer Food Fair,student,5,2025-07-09,32.00
+B0001,Bruce LEe,000909203300,E001,Education Fair,vip,2,2025-07-09,48.20
