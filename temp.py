@@ -30,30 +30,39 @@ def eventOptionMenu():
         for event_info in events:
             info = event_info.strip().split(",")
 
-            if len(info) >= 4:
+            if len(info) >= 2:
                 event_id = info[0]
                 event_name = info[1]
                 event_date = info[2]
                 event_venue = info [3]
 
                 if event_id not in event_dict:
-                    event_dict[event_id] = {
-                        "name": event_name,
-                        "date": event_date,
-                        "venue": event_venue
-                    }
+                    event_dict[event_id] = event_name,event_date, event_venue
     return event_dict
 
 # ********************** Add Event Function **********************
 def addEvent():
+    duplicate_id = [] #used to store shown event list
     print("\n=== Ongoing Event ===")
     # Display ongoing event
-    event_dict = eventOptionMenu()
-    for event_id, event_info in event_dict.items():
-        name = event_info["name"]
-        date = event_info["date"]
-        venue = event_info["venue"]
-        print(f"{event_id} - {name} | {date} | {venue}")
+    with open(events_filename, "r") as events_info:
+        for info in events_info:
+            if info.strip():
+                info_parts = info.strip().split(",")
+                event_id = info_parts[0]
+                
+                # a loop to check whether an event had already displayed, to prevent duplicate event display
+                found = False
+                for dup_event_id in duplicate_id:
+                    if dup_event_id == event_id:
+                        found = True
+                        break
+                if not found:
+                    name = info_parts[1]
+                    date = info_parts[2]
+                    venue = info_parts[3]
+                    print(f"{event_id} - {name} | {date} | {venue}")
+                    duplicate_id.append(event_id) # append shown event_id to duplicate_id list
 
     print("\n=== Add New Event ===")
     
@@ -118,21 +127,40 @@ def addEvent():
 def bookTicket():
     print(f"\n{'='*10} Book Ticket {'='*10}")
     duplicate_id = [] #used to store shown event list
-    event_dict = eventOptionMenu()
-    for event_id, event_info in event_dict.items():
-        name = event_info["name"]
-        date = event_info["date"]
-        venue = event_info["venue"]
-        print(f"\n{'Event ID':<12}: [ {event_id} ]\n{'Event Title':<12}: {name}\n{'Date':<12}: {date}\n{'Venue':<12}: {venue}\n")
-        print("-"*33)
+
+    with open(events_filename, "r") as events_info:
+        for info in events_info:
+            if info.strip():
+                info_parts = info.strip().split(",")
+                event_id = info_parts[0]
+                event_dict = eventOptionMenu()
+                
+                # a loop to check whether an event had already displayed, to prevent duplicate event display
+                found = False
+                for dup_event_id in duplicate_id:
+                    if dup_event_id == event_id:
+                        found = True
+                        break
+
+                if not found:
+                    name = info_parts[1]
+                    date = info_parts[2]
+                    venue = info_parts[3]
+                    print(f"\n{'Event ID':<12}: [ {event_id} ]\n{'Event Title':<12}: {name}\n{'Date':<12}: {date}\n{'Venue':<12}: {venue}\n")
+                    print("-"*33)
+                    duplicate_id.append(event_id) # append shown event_id to duplicate_id list
 
     while True:
         selectID = input("Please Enter Event ID: ").strip().upper() # Event ID input
         if check_cancel(selectID):
             return
         # Use duplicate_id list to find valid event id
-
-        if event_dict.get(selectID.upper()) is None:
+        found = False
+        for dup_event_id in duplicate_id:
+            if selectID == dup_event_id:
+                found = True
+                break
+        if not found:
             print("Invalid event ID! Please Enter Again!")
         else:
             break
