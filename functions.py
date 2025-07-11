@@ -4,7 +4,7 @@ import random
 from datetime import datetime
 from event import Event
 from bill import Bill
-import ticket
+from ticket import Ticket
 
 # variable for each file
 events_filename = "events.txt"
@@ -22,7 +22,7 @@ def functionMenu():
     }
 
 
-# not found
+# Event Option and List to display, used dict{} to prevent duplicate event_id
 def eventOptionMenu():
     event_dict = {}
 
@@ -47,7 +47,7 @@ def eventOptionMenu():
 # ********************** Add Event Function **********************
 def addEvent():
     print("\n=== Ongoing Event ===")
-    # Display ongoing event
+    # eventOptionMenu to show added event list
     event_dict = eventOptionMenu()
     for event_id, event_info in event_dict.items():
         name = event_info["name"]
@@ -117,7 +117,8 @@ def addEvent():
 # ********************** Book Ticket Function **********************
 def bookTicket():
     print(f"\n{'='*10} Book Ticket {'='*10}")
-    duplicate_id = [] #used to store shown event list
+    
+    # eventOptionMenu to show event list
     event_dict = eventOptionMenu()
     for event_id, event_info in event_dict.items():
         name = event_info["name"]
@@ -130,8 +131,7 @@ def bookTicket():
         selectID = input("Please Enter Event ID: ").strip().upper() # Event ID input
         if check_cancel(selectID):
             return
-        # Use duplicate_id list to find valid event id
-
+        # use event_dict to validate event id entered by user
         if event_dict.get(selectID.upper()) is None:
             print("Invalid event ID! Please Enter Again!")
         else:
@@ -272,11 +272,19 @@ def bookTicket():
     with open(bookings_filename, "a") as booking_file:
         booking_file.write(f"{new_booking_id},{buyer_name},{ic_passport},{selectID},{event_name},{matched_type},{ticketQuantity},{bill_info.booking_date},{bill_info.total_charge():.2f}\n")
 
-    # Save to tickets.txt
+    # Save to tickets.txt using Ticket Class
     with open(tickets_filename, "a") as ticket_file:
         for ticket_id in new_ticket_id: 
-            ticket_file.write(f"{ticket_id},{new_booking_id},{selectID},{matched_type},{buyer_name},{ic_passport},{"Active"}\n")
-
+            ticket = Ticket(
+                ticket_id = ticket_id,
+                booking_id = new_booking_id,
+                event_id = selectID,
+                ticket_type = matched_type,
+                buyer_name = buyer_name,
+                ic_number = ic_passport,
+                
+            )
+            ticket_file.write(str(ticket))
 # ********************** Check In Ticket Function **********************
 def checkInTicket():
     print("\n=== Ticket Check-In ===")
